@@ -1,35 +1,83 @@
 # ============================================================================
-# - https://github.com/molly/twitterbot_framework
-# - http://blog.mollywhite.net/how-to-create-a-twitter-bot/
+# - https://github.com/egray523/cheese
 #
-# Copyright (c) 2015–2016 Molly White
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# An enormous thanks to the talented Alix Chagué, who both inspired me to
+# this twitter bot, and then graciously helped in the redaction of testing of
+# this monument to one of France's finest products. Her work can be found at:
+# - https://github.com/alix-tz
 # ============================================================================
 
 
 import tweepy
+import csv
+import random
+import requests
 
 from secrets import *
 
-auth = tweepy.OAuthHandler(C_KEY, C_SECRET)  
-auth.set_access_token(A_TOKEN, A_TOKEN_SECRET)  
-api = tweepy.API(auth) 
+list_cheese = []
 
-api.update_status(tweet)  
+with open('UnJourUnFromage.csv', newline='') as csvfile:
+	reader = csv.reader(csvfile)
+	for row in reader:
+		list_cheese.append(row)
+todayscheese= random.choice(list_cheese)
+print("Aujourd'hui, le bot vous propose", todayscheese[0], todayscheese[1])
+
+#CREATING TWEET #####################################################################################
+
+def generate_img(url):
+	""" Turn url of image into image that can be loaded into twitter"""
+	#url = todayscheese[1]
+	r = requests.get(url = url)
+	return r.content # this is a png file
+
+def save_image_file(img):
+    """save the image in a temporary file"""
+    with open("temp.png", "wb") as fh:
+        fh.write(img)
+
+
+def build_text_for_tweet(cheesename):
+	"""Create the textual  content of the future tweet"""
+	message = "Aujourd'hui, le bot vous propose: \n{} \n#wikidata #cheesebot\n".format(cheesename)
+	return message
+
+def create_tweet(source):
+	""" defines textual and image content for tweet"""
+	message = build_text_for_tweet(todayscheese[0])
+	image = generate_img(todayscheese[1])
+	return image, message
+
+
+# TWEETING ##########################################################################################
+
+def tweet(message):
+	"""Post a tweet"""
+	from secrets import CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET
+
+	# Twitter authentication
+	auth = tweepy.OAuthHandler(C_KEY, C_SECRET)  
+	auth.set_access_token(A_TOKEN, A_TOKEN_SECRET)  
+	api = tweepy.API(auth) 
+
+	# posting
+	report_uploading_image()
+	try:
+		uploaded = api.media_upload(filename = "temp.png")
+	except tweepy.error.TweepError as e:
+		print(e)
+		uploaded = None
+
+	report_posting_tweet()
+	try:
+		api.update_status(status = message, media_ids = [uploaded.media_id])
+	except tweepy.error.TweepError as e:
+		print(e.message)
+
+
+if __name__ == "__main__":
+	source = "./data/classes_of_entity.json"
+	image, message = create_tweet(source)
+	save_image_file(image)
+	tweet(message) 
