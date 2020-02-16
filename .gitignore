@@ -1,2 +1,5 @@
 secrets.py
 UnJourUnFromage.csv
+venv/
+__pycache__
+temp.png

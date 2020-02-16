@@ -3,8 +3,9 @@
 # - https://twitter.com/unjourunfromage
 #
 # An enormous thanks to the talented Alix Chagué, who both inspired me to
-# this twitter bot, and then graciously helped in the redaction of testing of
-# this monument to one of France's finest products. Her work can be found at:
+# create this twitter bot, and then graciously helped in the redaction and 
+# testing of this monument to one of France's finest products. Her work can 
+# be found at:
 # - https://github.com/alix-tz
 # ============================================================================
 
@@ -55,7 +56,7 @@ def create_tweet(source):
 
 def tweet(message):
 	"""Post a tweet"""
-	from secrets import CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET
+	from secrets import C_KEY, C_SECRET, A_TOKEN, A_TOKEN_SECRET
 
 	# Twitter authentication
 	auth = tweepy.OAuthHandler(C_KEY, C_SECRET)  
@@ -63,14 +64,12 @@ def tweet(message):
 	api = tweepy.API(auth) 
 
 	# posting
-	report_uploading_image()
 	try:
 		uploaded = api.media_upload(filename = "temp.png")
 	except tweepy.error.TweepError as e:
 		print(e)
 		uploaded = None
 
-	report_posting_tweet()
 	try:
 		api.update_status(status = message, media_ids = [uploaded.media_id])
 	except tweepy.error.TweepError as e:
