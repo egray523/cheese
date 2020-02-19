@@ -17,15 +17,6 @@ import requests
 
 from secrets import *
 
-list_cheese = []
-
-with open('UnJourUnFromage.csv', newline='') as csvfile:
-	reader = csv.reader(csvfile)
-	for row in reader:
-		list_cheese.append(row)
-todayscheese= random.choice(list_cheese)
-print("Aujourd'hui, le bot vous propose", todayscheese[0], todayscheese[1])
-
 #CREATING TWEET #####################################################################################
 
 def generate_img(url):
@@ -75,6 +66,14 @@ def tweet(message):
 	except tweepy.error.TweepError as e:
 		print(e.message)
 
+list_cheese = []
+
+with open('UnJourUnFromage.csv', newline='') as csvfile:
+	reader = csv.reader(csvfile)
+	for row in reader:
+		list_cheese.append(row)
+todayscheese= random.choice(list_cheese)
+print("Aujourd'hui, le bot vous propose", todayscheese[0], todayscheese[1])
 
 if __name__ == "__main__":
 	source = "./data/classes_of_entity.json"
